@@ -1,10 +1,12 @@
 from .utils import clear_screen, safe_input, print_header
 from .player import Player
+from .enemy import Enemy
 
 class GameEngine:
     def __init__(self):
         self.is_running = True
         self.player = Player()
+        self.player_history = []
         self.state = "MENU" # MENU, PLAYING, EXIT
 
     def start(self):
