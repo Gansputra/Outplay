@@ -53,8 +53,12 @@ class CombatManager:
         return "VICTORY" if self.enemy.hp <= 0 else "DEFEAT"
 
     def _execute_turn(self, player_action):
-        # Calculate modifier based on memory before recording the new choice
-        modifier = self.memory.get_effectiveness_modifier(player_action)
+        # Calculate modifiers
+        mem_modifier = self.memory.get_effectiveness_modifier(player_action)
+        enemy_modifier = self.enemy.get_adaptation_penalty(player_action, self.player_history)
+        
+        # Combined effectiveness (taking the lower of the two or a product)
+        modifier = min(mem_modifier, enemy_modifier)
         
         self.player_history.append(player_action)
         self.memory.record_decision(player_action)
@@ -63,20 +67,25 @@ class CombatManager:
         
         print_header("TURN RESOLUTION")
         if modifier < 1.0:
-            print(f"[!] Warning: Your actions are predictable! Effectiveness: {int(modifier*100)}%")
+            print(f"[!] COMBINED EFFECTIVENESS: {int(modifier*100)}%")
+            if enemy_modifier < mem_modifier:
+                print(f"-> {self.enemy.name} has adapted to your style!")
+            else:
+                print("-> You are losing concentration from repetitive actions.")
             
-        print(f"You chose to {player_action}.")
+        print(f"\nYou chose to {player_action}.")
         print(f"{self.enemy.name} is preparing to {enemy_action}.\n")
 
         # RESOLUTION LOGIC
         if player_action == "OBSERVE":
-            self.player.apply_decision_effect({"insight": 2, "risk": -5})
+            insight_gain = int(2 * modifier)
+            self.player.apply_decision_effect({"insight": insight_gain, "risk": -5})
             if enemy_action == "ATTACK":
                 dmg = 5
-                self.player.apply_decision_effect({"hp": -dmg, "insight": 3})
+                self.player.apply_decision_effect({"hp": -dmg, "insight": 1})
                 print(f"-> You caught a glimpse of their style while taking a hit (-{dmg} HP).")
             else:
-                print("-> You studied the surroundings undisturbed.")
+                print(f"-> You studied the surroundings undisturbed (+{insight_gain} Insight).")
 
         elif player_action == "PRESSURE":
             dmg = int(random.randint(3, 7) * modifier)
@@ -90,7 +99,7 @@ class CombatManager:
         elif player_action == "BAIT":
             self.player.apply_decision_effect({"risk": 15})
             if enemy_action == "ATTACK":
-                counter_dmg = 15 + (self.player.insight // 2)
+                counter_dmg = int((15 + (self.player.insight // 2)) * modifier)
                 self.enemy.hp -= counter_dmg
                 self.player.apply_decision_effect({"risk": -10, "focus": 2})
                 print(f"-> PERFECT COUNTER! You lured them in and struck back for {counter_dmg} damage!")

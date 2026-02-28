@@ -22,42 +22,60 @@ class Enemy:
     def choose_response(self, player_history):
         """
         Determines the enemy's next action based on its traits and the player's history.
-        
-        Args:
-            player_history (list): List of previous actions taken by the player.
-            
-        Returns:
-            str: The chosen action ('ATTACK', 'DEFEND', 'WAIT', 'COUNTER').
         """
-        # Baseline probability based on aggression and patience
-        attack_weight = self.aggression
-        defend_weight = self.patience
-        wait_weight = 10 - self.aggression
+        # Baseline weights
+        weights = {
+            'ATTACK': self.aggression,
+            'DEFEND': self.patience,
+            'WAIT': max(1, 10 - self.aggression),
+            'COUNTER': 0
+        }
         
-        # Simple Adaptation Logic
-        if player_history:
-            # Check for patterns (e.g., player attacks frequently)
-            recent_actions = player_history[-3:]
-            attack_count = recent_actions.count('ATTACK')
-            
-            # If player is aggressive, high adapt_rate increases chance to DEFEND or COUNTER
-            if attack_count >= 2:
-                defend_weight += self.adapt_rate * 2
-            
-            # If player is defensive, high aggression increases chance to ATTACK
-            defend_count = recent_actions.count('DEFEND')
-            if defend_count >= 2:
-                attack_weight += self.adapt_rate * 1.5
+        if not player_history:
+            return random.choices(list(weights.keys()), weights=list(weights.values()))[0]
 
-        # Normalize and choose
-        actions = ['ATTACK', 'DEFEND', 'WAIT', 'COUNTER']
-        # Rough counter weight based on adaptation
-        counter_weight = self.adapt_rate if len(player_history) > 2 else 0
-        
-        weights = [attack_weight, defend_weight, wait_weight, counter_weight]
-        
-        chosen_action = random.choices(actions, weights=weights, k=1)[0]
+        # Analyze player patterns
+        recent_5 = player_history[-5:]
+        most_frequent = max(set(recent_5), key=recent_5.count)
+        freq_count = recent_5.count(most_frequent)
+
+        # Strategic Adaptation based on player's most used tactic
+        if most_frequent == "ATTACK":
+            weights['DEFEND'] += self.adapt_rate * freq_count
+            weights['COUNTER'] += self.adapt_rate * (freq_count - 1)
+        elif most_frequent == "PRESSURE":
+            weights['ATTACK'] += self.adapt_rate * 1.5
+        elif most_frequent == "BAIT":
+            weights['WAIT'] += self.adapt_rate * 2
+            weights['DEFEND'] += self.adapt_rate
+        elif most_frequent == "OBSERVE":
+            weights['ATTACK'] += self.adapt_rate * 1.2
+            
+        # Add slight randomness/unpredictability
+        chosen_action = random.choices(list(weights.keys()), weights=list(weights.values()))[0]
         return chosen_action
+
+    def get_adaptation_penalty(self, player_action, player_history):
+        """
+        Returns a penalty modifier (0.0 to 1.0) based on how much the enemy 
+        has adapted to this specific player action.
+        """
+        if not player_history:
+            return 1.0
+            
+        recent_5 = player_history[-5:]
+        occurrence = recent_5.count(player_action)
+        
+        # Every time the same action is in the history, effectiveness drops
+        # based on the enemy's adapt_rate
+        penalty = (occurrence * self.adapt_rate) / 20.0 # Max 0.5 penalty at 5/5 frequency and 2 adapt_rate
+        
+        modifier = max(0.4, 1.0 - penalty)
+        
+        if modifier < 1.0:
+            print(f"[{self.name}] I've seen your {player_action} before. It won't work as well now.")
+            
+        return modifier
 
     def display_status(self):
         print(f"[{self.name}] HP: {self.hp}/{self.max_hp} | Aggression: {self.aggression}")
