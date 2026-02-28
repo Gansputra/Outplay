@@ -1,6 +1,7 @@
 from .utils import clear_screen, safe_input, print_header
 from .player import Player
 from .enemy import Enemy
+from .combat import CombatManager
 
 class GameEngine:
     def __init__(self):
@@ -37,24 +38,19 @@ class GameEngine:
 
     def _handle_gameplay(self):
         clear_screen()
-        self.player.display_status()
-        print_header("Dungeon - Level 1")
-        print("\nYou are in a dark room. Not much to see here yet...")
-        print("\nType 'back' to return to menu or 'quit' to exit.")
+        # For demo purposes, we trigger an encounter when entering gameplay
+        print_header("A Shadow Approaches...")
+        enemy = Enemy("Stalker", aggression=7, patience=3, adapt_rate=4)
+        combat = CombatManager(self.player, enemy, self.player_history)
         
-        action = safe_input("\nWhat do you do? ")
-        if action is None:
-            self.state = "EXIT"
-            return
-            
-        action = action.lower()
-        if action == "back":
-            self.state = "MENU"
-        elif action == "quit":
+        result = combat.start_encounter()
+        
+        if result == "EXIT":
             self.state = "EXIT"
         else:
-            print(f"I don't know how to '{action}'. Press Enter to continue.")
-            input()
+            print(f"\nEncounter Result: {result}")
+            input("Press Enter to return to menu...")
+            self.state = "MENU"
 
     def _shutdown(self):
         print("\nThanks for playing! Goodbye.")
