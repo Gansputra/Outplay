@@ -1,0 +1,10 @@
+[
+    {
+        "player_name": "Traveler",
+        "fights": 1,
+        "dominant_decision": "ATTACK",
+        "final_hp": "100/100",
+        "scars": [],
+        "ending_type": "MANUAL_EXIT"
+    }
+]
