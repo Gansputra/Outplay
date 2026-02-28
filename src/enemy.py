@@ -1,5 +1,5 @@
 import random
-from .utils import print_header
+from .utils import print_header, CLR
 
 class Enemy:
     def __init__(self, name="Shadow", aggression=5, patience=5, adapt_rate=2):
@@ -78,4 +78,6 @@ class Enemy:
         return modifier
 
     def display_status(self):
-        print(f"[{self.name}] HP: {self.hp}/{self.max_hp} | Aggression: {self.aggression}")
+        hp_perc = (self.hp / self.max_hp) * 100
+        hp_color = CLR['GREEN'] if hp_perc > 50 else (CLR['YELLOW'] if hp_perc > 25 else CLR['RED'])
+        print(f"[{CLR['RED']}{self.name}{CLR['RESET']}] HP: {hp_color}{self.hp}/{self.max_hp}{CLR['RESET']} | Aggression: {CLR['YELLOW']}{self.aggression}{CLR['RESET']}")

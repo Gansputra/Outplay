@@ -1,32 +1,38 @@
 import os
 import sys
 
+# ANSI Color Codes
+CLR = {
+    "RESET": "\033[0m",
+    "BOLD": "\033[1m",
+    "RED": "\033[91m",
+    "GREEN": "\033[92m",
+    "YELLOW": "\033[93m",
+    "BLUE": "\033[94m",
+    "MAGENTA": "\033[95m",
+    "CYAN": "\033[96m",
+    "WHITE": "\033[97m",
+}
+
 def clear_screen():
-    """
-    Clears the terminal screen based on the operating system.
-    """
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def safe_input(prompt="> "):
-    """
-    Safely handles user input, catching KeyboardInterrupt and EOFError.
-    
-    Args:
-        prompt (str): The text to display before input.
-        
-    Returns:
-        str: The user's input, or None if the input was interrupted.
-    """
     try:
-        user_input = input(prompt).strip()
+        color_prompt = f"{CLR['CYAN']}{prompt}{CLR['RESET']}"
+        user_input = input(color_prompt).strip()
         return user_input
     except (KeyboardInterrupt, EOFError):
-        print("\n[!] Input cancelled.")
+        print(f"\n{CLR['RED']}[!] Input cancelled.{CLR['RESET']}")
         return None
 
-def print_header(text):
-    """Prints a styled header."""
-    width = 40
-    print("=" * width)
+def print_header(text, color="CYAN"):
+    width = 50
+    c = CLR.get(color, CLR["CYAN"])
+    print(f"\n{c}{'=' * width}")
     print(f"{text.center(width)}")
-    print("=" * width)
+    print(f"{'=' * width}{CLR['RESET']}")
+
+def print_subheader(text, color="WHITE"):
+    c = CLR.get(color, CLR["WHITE"])
+    print(f"{c}--- {text} ---{CLR['RESET']}")

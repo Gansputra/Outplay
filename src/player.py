@@ -1,4 +1,4 @@
-from .utils import print_header
+from .utils import print_header, CLR
 
 class Player:
     def __init__(self, name="Traveler", hp=100, insight=10, focus=10, risk=0):
@@ -13,14 +13,14 @@ class Player:
 
     def display_status(self):
         """Displays the player's current status and statistics."""
-        print_header(f"STATUS: {self.name}")
-        print(f"HP      : {self.hp}/{self.max_hp}")
-        print(f"Focus   : {self.focus}/{self.max_focus}")
-        print(f"Insight : {self.insight}")
-        print(f"Risk    : {self.risk}%")
+        print_header(f"STATUS: {self.name}", color="GREEN")
+        print(f"{CLR['BOLD']}HP      :{CLR['RESET']} {CLR['GREEN']}{self.hp}/{self.max_hp}{CLR['RESET']}")
+        print(f"{CLR['BOLD']}Focus   :{CLR['RESET']} {CLR['BLUE']}{self.focus}/{self.max_focus}{CLR['RESET']}")
+        print(f"{CLR['BOLD']}Insight :{CLR['RESET']} {CLR['YELLOW']}{self.insight}{CLR['RESET']}")
+        print(f"{CLR['BOLD']}Risk    :{CLR['RESET']} {CLR['RED']}{self.risk}%{CLR['RESET']}")
         if self.permanent_scars:
-            print(f"Scars   : {', '.join(self.permanent_scars)}")
-        print("-" * 40)
+            print(f"{CLR['MAGENTA']}Scars   : {', '.join(self.permanent_scars)}{CLR['RESET']}")
+        print("-" * 50)
 
     def apply_permanent_penalty(self, stat, value, reason):
         """Reduces max stats permanently."""

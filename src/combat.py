@@ -1,4 +1,4 @@
-from .utils import clear_screen, safe_input, print_header
+from .utils import clear_screen, safe_input, print_header, CLR
 from .memory import MemorySystem
 import random
 
@@ -18,7 +18,7 @@ class CombatManager:
             self.player.display_status()
             self.enemy.display_status()
             
-            print(f"Recent Choices: {self.memory.get_history_summary()}")
+            print(f"{CLR['BOLD']}Recent Choices:{CLR['RESET']} {CLR['CYAN']}{self.memory.get_history_summary()}{CLR['RESET']}")
             print_header("COMBAT ACTIONS")
             print("1. Observe  (Gain Insight, Lower Risk)")
             print("2. Pressure (Stress Enemy, Minor Damage)")
@@ -88,11 +88,11 @@ class CombatManager:
         
         print_header("TURN RESOLUTION")
         if modifier < 1.0:
-            print(f"[!] COMBINED EFFECTIVENESS: {int(modifier*100)}%")
+            print(f"{CLR['YELLOW']}[!] COMBINED EFFECTIVENESS: {int(modifier*100)}%{CLR['RESET']}")
             if enemy_modifier < mem_modifier:
-                print(f"-> {self.enemy.name} has adapted to your style!")
+                print(f"{CLR['MAGENTA']}-> {self.enemy.name} has adapted to your style!{CLR['RESET']}")
             else:
-                print("-> You are losing concentration from repetitive actions.")
+                print(f"{CLR['BLUE']}-> You are losing concentration from repetitive actions.{CLR['RESET']}")
             
         print(f"\nYou chose to {player_action}.")
         print(f"{self.enemy.name} is preparing to {enemy_action}.\n")
