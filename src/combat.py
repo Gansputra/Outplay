@@ -57,8 +57,18 @@ class CombatManager:
         mem_modifier = self.memory.get_effectiveness_modifier(player_action)
         enemy_modifier = self.enemy.get_adaptation_penalty(player_action, self.player_history)
         
-        # Combined effectiveness (taking the lower of the two or a product)
+        # Combined effectiveness
         modifier = min(mem_modifier, enemy_modifier)
+        
+        # Apply Fatigue System
+        fatigue_effects = self.memory.get_fatigue_triggers(player_action)
+        if fatigue_effects:
+            print_header("FATIGUE WARNING")
+            if "focus" in fatigue_effects:
+                print(f"-> Mental Strain: Over-analyzing is draining your focus! ({fatigue_effects['focus']} Focus)")
+            if "risk" in fatigue_effects:
+                print(f"-> Over-extension: Aggressive tunneling increases your exposure! (+{fatigue_effects['risk']}% Risk)")
+            self.player.apply_decision_effect(fatigue_effects)
         
         self.player_history.append(player_action)
         self.memory.record_decision(player_action)
@@ -80,9 +90,13 @@ class CombatManager:
         if player_action == "OBSERVE":
             insight_gain = int(2 * modifier)
             self.player.apply_decision_effect({"insight": insight_gain, "risk": -5})
+            
             if enemy_action == "ATTACK":
-                dmg = 5
+                # High risk leads to more damage received
+                risk_multiplier = 1.0 + (self.player.risk / 100.0)
+                dmg = int(5 * risk_multiplier)
                 self.player.apply_decision_effect({"hp": -dmg, "insight": 1})
+                print(f"-> Exposure Penalty: Your high risk ({self.player.risk}%) increased damage taken!")
                 print(f"-> You caught a glimpse of their style while taking a hit (-{dmg} HP).")
             else:
                 print(f"-> You studied the surroundings undisturbed (+{insight_gain} Insight).")
