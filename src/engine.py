@@ -48,9 +48,36 @@ class GameEngine:
         if result == "EXIT":
             self.state = "EXIT"
         else:
-            print(f"\nEncounter Result: {result}")
-            input("Press Enter to return to menu...")
+            self._process_combat_result(result)
+            input("\nPress Enter to return to menu...")
             self.state = "MENU"
+
+    def _process_combat_result(self, result):
+        clear_screen()
+        print_header("AFTERMATH")
+        
+        if result == "VICTORY":
+            print("\nYou emerged victorious. Your resolve strengthens.")
+            self.player.apply_decision_effect({"focus": 2, "insight": 1})
+        
+        elif result == "PHYSICAL_TRAUMA":
+            print("\nYou were beaten down brutally.")
+            self.player.apply_permanent_penalty("max_hp", 5, "Shattered Ribs")
+            self.player.hp = 10 # Recover slightly
+            
+        elif result == "MENTAL_COLLAPSE":
+            print("\nYour mind gave way before your body did.")
+            self.player.apply_permanent_penalty("max_focus", 2, "Nightmares")
+            self.player.focus = 2 # Recover slightly
+            
+        elif result == "ESCAPED_COWARDLY":
+            print("\nYou fled in terror, leaving your pride behind.")
+            self.player.apply_decision_effect({"insight": -3})
+            self.player.hp = 20
+            
+        else:
+            print(f"\nEncounter ended with status: {result}")
+            self.player.hp = 15
 
     def _shutdown(self):
         print("\nThanks for playing! Goodbye.")

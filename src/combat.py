@@ -44,13 +44,24 @@ class CombatManager:
             if self.enemy.hp <= 0:
                 print(f"\n[!] {self.enemy.name} has been suppressed.")
                 input()
-                combat_active = False
+                return "VICTORY"
             elif self.player.hp <= 0:
-                print("\n[!] You have succumbed to the pressure...")
-                input()
-                combat_active = False
+                return self._determine_defeat_type()
 
         return "VICTORY" if self.enemy.hp <= 0 else "DEFEAT"
+
+    def _determine_defeat_type(self):
+        """Logic to decide the nature of the player's defeat."""
+        last_action = self.player_history[-1] if self.player_history else "NONE"
+        
+        if self.player.risk > 50:
+            return "PHYSICAL_TRAUMA"  # Hit 0 HP with high risk
+        elif self.player.focus <= 2:
+            return "MENTAL_COLLAPSE"  # Hit 0 HP while mentally exhausted
+        elif last_action == "OBSERVE":
+            return "ESCAPED_COWARDLY" # Lost while being passive
+        else:
+            return "DEFEAT"
 
     def _execute_turn(self, player_action):
         # Calculate modifiers

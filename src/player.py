@@ -9,6 +9,7 @@ class Player:
         self.focus = focus
         self.max_focus = focus
         self.risk = risk
+        self.permanent_scars = []
 
     def display_status(self):
         """Displays the player's current status and statistics."""
@@ -17,7 +18,24 @@ class Player:
         print(f"Focus   : {self.focus}/{self.max_focus}")
         print(f"Insight : {self.insight}")
         print(f"Risk    : {self.risk}%")
+        if self.permanent_scars:
+            print(f"Scars   : {', '.join(self.permanent_scars)}")
         print("-" * 40)
+
+    def apply_permanent_penalty(self, stat, value, reason):
+        """Reduces max stats permanently."""
+        if hasattr(self, stat):
+            current_val = getattr(self, stat)
+            setattr(self, stat, max(1, current_val - value))
+            
+            # If we reduce max_hp or max_focus, we should also clamp current values
+            if stat == "max_hp":
+                self.hp = min(self.hp, self.max_hp)
+            elif stat == "max_focus":
+                self.focus = min(self.focus, self.max_focus)
+                
+            self.permanent_scars.append(reason)
+            print(f"\n[!!!] PERMANENT PENALTY: {stat.upper()} decreased by {value} due to {reason}.")
 
     def apply_decision_effect(self, effects: dict):
         """
