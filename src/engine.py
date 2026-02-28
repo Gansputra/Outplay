@@ -1,8 +1,10 @@
 from .utils import clear_screen, safe_input, print_header
+from .player import Player
 
 class GameEngine:
     def __init__(self):
         self.is_running = True
+        self.player = Player()
         self.state = "MENU" # MENU, PLAYING, EXIT
 
     def start(self):
@@ -33,18 +35,23 @@ class GameEngine:
 
     def _handle_gameplay(self):
         clear_screen()
+        self.player.display_status()
         print_header("Dungeon - Level 1")
         print("\nYou are in a dark room. Not much to see here yet...")
         print("\nType 'back' to return to menu or 'quit' to exit.")
         
-        action = safe_input("\nWhat do you do? ").lower()
-        
+        action = safe_input("\nWhat do you do? ")
+        if action is None:
+            self.state = "EXIT"
+            return
+            
+        action = action.lower()
         if action == "back":
             self.state = "MENU"
-        elif action == "quit" or action is None:
+        elif action == "quit":
             self.state = "EXIT"
         else:
-            print(f"I don't know how to {action}. Press Enter to continue.")
+            print(f"I don't know how to '{action}'. Press Enter to continue.")
             input()
 
     def _shutdown(self):
