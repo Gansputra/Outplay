@@ -1,4 +1,5 @@
 from .utils import clear_screen, safe_input, print_header
+from .memory import MemorySystem
 import random
 
 class CombatManager:
@@ -6,6 +7,7 @@ class CombatManager:
         self.player = player
         self.enemy = enemy
         self.player_history = player_history
+        self.memory = MemorySystem(size=5)
 
     def start_encounter(self):
         """Main combat loop."""
@@ -16,6 +18,7 @@ class CombatManager:
             self.player.display_status()
             self.enemy.display_status()
             
+            print(f"Recent Choices: {self.memory.get_history_summary()}")
             print_header("COMBAT ACTIONS")
             print("1. Observe  (Gain Insight, Lower Risk)")
             print("2. Pressure (Stress Enemy, Minor Damage)")
@@ -50,10 +53,18 @@ class CombatManager:
         return "VICTORY" if self.enemy.hp <= 0 else "DEFEAT"
 
     def _execute_turn(self, player_action):
+        # Calculate modifier based on memory before recording the new choice
+        modifier = self.memory.get_effectiveness_modifier(player_action)
+        
         self.player_history.append(player_action)
+        self.memory.record_decision(player_action)
+        
         enemy_action = self.enemy.choose_response(self.player_history)
         
         print_header("TURN RESOLUTION")
+        if modifier < 1.0:
+            print(f"[!] Warning: Your actions are predictable! Effectiveness: {int(modifier*100)}%")
+            
         print(f"You chose to {player_action}.")
         print(f"{self.enemy.name} is preparing to {enemy_action}.\n")
 
@@ -68,7 +79,7 @@ class CombatManager:
                 print("-> You studied the surroundings undisturbed.")
 
         elif player_action == "PRESSURE":
-            dmg = random.randint(3, 7)
+            dmg = int(random.randint(3, 7) * modifier)
             self.enemy.hp -= dmg
             self.player.apply_decision_effect({"risk": 2, "focus": -1})
             if enemy_action == "DEFEND":
@@ -88,7 +99,7 @@ class CombatManager:
 
         elif player_action == "ATTACK":
             if self.player.focus >= 2:
-                base_dmg = 8 + (self.player.insight // 3)
+                base_dmg = int((8 + (self.player.insight // 3)) * modifier)
                 if enemy_action == "DEFEND":
                     base_dmg //= 2
                     print("-> They blocked part of the impact.")
