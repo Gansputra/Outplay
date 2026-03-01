@@ -30,5 +30,29 @@
         "final_hp": "100/100",
         "scars": [],
         "ending_type": "MANUAL_EXIT"
+    },
+    {
+        "player_name": "Gansputra",
+        "fights": 1,
+        "dominant_decision": "None",
+        "final_hp": "100/100",
+        "scars": [],
+        "ending_type": "MANUAL_EXIT"
+    },
+    {
+        "player_name": "gg",
+        "fights": 1,
+        "dominant_decision": "None",
+        "final_hp": "100/100",
+        "scars": [],
+        "ending_type": "MANUAL_EXIT"
+    },
+    {
+        "player_name": "dd",
+        "fights": 1,
+        "dominant_decision": "None",
+        "final_hp": "100/100",
+        "scars": [],
+        "ending_type": "MANUAL_EXIT"
     }
 ]

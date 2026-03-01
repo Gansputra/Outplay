@@ -12,6 +12,7 @@ class GameEngine:
         self.player_history = []
         self.fight_count = 0
         self.state = "MENU" # MENU, PLAYING, EXIT
+        self.difficulty = "MEDIUM"
 
     def start(self):
         """Starts the main game loop."""
@@ -41,6 +42,21 @@ class GameEngine:
             name = safe_input("\nEnter your name, Traveler: ")
             if name:
                 self.player.name = name
+            
+            # Difficulty Selection
+            clear_screen()
+            diff_options = [
+                "1. EASY   (Classic Journey)",
+                "2. MEDIUM (The Standard)",
+                "3. HARD   (Cruel Reality)"
+            ]
+            box_text(diff_options, width=40, title="SELECT DIFFICULTY", color="YELLOW")
+            diff_choice = safe_input("\nHow difficult is your path? ")
+            
+            if diff_choice == "1": self.difficulty = "EASY"
+            elif diff_choice == "3": self.difficulty = "HARD"
+            else: self.difficulty = "MEDIUM"
+                
             self.state = "PLAYING"
         elif choice == "2":
             clear_screen()
@@ -55,11 +71,21 @@ class GameEngine:
 
     def _handle_gameplay(self):
         clear_screen()
-        # For demo purposes, we trigger an encounter when entering gameplay
         print_header("A SHADOW APPROACHES", color="RED")
         from .utils import CLR
         print(f"\n{CLR['BOLD']}A figure emerges from the gloom...{CLR['RESET']}")
-        enemy = Enemy("Stalker", aggression=7, patience=3, adapt_rate=4)
+        
+        # Adjust Enemy base on difficulty
+        if self.difficulty == "EASY":
+            enemy = Enemy("Stalker", aggression=4, patience=3, adapt_rate=2)
+            enemy.hp = 40
+        elif self.difficulty == "HARD":
+            enemy = Enemy("Elite Stalker", aggression=9, patience=6, adapt_rate=8)
+            enemy.hp = 80
+        else: # MEDIUM
+            enemy = Enemy("Stalker", aggression=7, patience=3, adapt_rate=4)
+            enemy.hp = 50
+            
         combat = CombatManager(self.player, enemy, self.player_history)
         
         result = combat.start_encounter()
