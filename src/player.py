@@ -37,7 +37,7 @@ class Player:
             self.permanent_scars.append(reason)
             print(f"\n[!!!] PERMANENT PENALTY: {stat.upper()} decreased by {value} due to {reason}.")
 
-    def apply_decision_effect(self, effects: dict):
+    def apply_decision_effect(self, effects: dict, silent=False):
         """
         Applies changes to the player's stats based on a decision.
         Example effects: {"hp": -10, "insight": 5, "risk": 2}
@@ -55,7 +55,9 @@ class Player:
                     self.risk = max(0, self.risk)
                 
                 # Feedback to user
-                change = f"+{value}" if value > 0 else f"{value}"
-                print(f"[Stat Update] {stat.upper()}: {change}")
+                if not silent:
+                    change = f"+{value}" if value > 0 else f"{value}"
+                    print(f"[Stat Update] {stat.upper()}: {change}")
             else:
-                print(f"[Warning] Unknown stat: {stat}")
+                if not silent:
+                    print(f"[Warning] Unknown stat: {stat}")

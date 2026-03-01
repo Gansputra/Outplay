@@ -25,19 +25,30 @@ class GameEngine:
 
     def _handle_menu(self):
         clear_screen()
-        print_header("OUTPLAY RPG")
-        print("\n1. Start Game")
-        print("2. Quit")
+        from .utils import print_logo, box_text
+        print_logo()
+        
+        menu_options = [
+            "1. Start Chronicle",
+            "2. View Hall of Fame",
+            "3. Quit"
+        ]
+        box_text(menu_options, width=40, title="MAIN MENU", color="CYAN")
         
         choice = safe_input("\nChoose an option: ")
         
         if choice == "1":
             self.state = "PLAYING"
-        elif choice == "2" or choice is None:
+        elif choice == "2":
+            clear_screen()
+            print_header("HALL OF FAME")
+            print("Feature coming soon! (Wait for next upgrade, King!)")
+            input("\nPress Enter to return...")
+        elif choice == "3" or choice is None:
             self.state = "EXIT"
         else:
-            print("Invalid choice. Press Enter to try again.")
-            input()
+            print(f"{CLR['RED']}Invalid choice.{CLR['RESET']}")
+            input("Press Enter to try again.")
 
     def _handle_gameplay(self):
         clear_screen()
@@ -60,30 +71,30 @@ class GameEngine:
 
     def _process_combat_result(self, result):
         clear_screen()
-        print_header("AFTERMATH")
+        from .utils import box_text
+        print_header("CHRONICLE UPDATE", color="YELLOW")
         
+        lines = []
         if result == "VICTORY":
-            print("\nYou emerged victorious. Your resolve strengthens.")
-            self.player.apply_decision_effect({"focus": 2, "insight": 1})
-        
+            lines.append("You emerged victorious. Your resolve strengthens.")
+            self.player.apply_decision_effect({"focus": 2, "insight": 1}, silent=True)
         elif result == "PHYSICAL_TRAUMA":
-            print("\nYou were beaten down brutally.")
+            lines.append("You were beaten down brutally.")
             self.player.apply_permanent_penalty("max_hp", 5, "Shattered Ribs")
-            self.player.hp = 10 # Recover slightly
-            
+            self.player.hp = 10
         elif result == "MENTAL_COLLAPSE":
-            print("\nYour mind gave way before your body did.")
+            lines.append("Your mind gave way before your body did.")
             self.player.apply_permanent_penalty("max_focus", 2, "Nightmares")
-            self.player.focus = 2 # Recover slightly
-            
+            self.player.focus = 2
         elif result == "ESCAPED_COWARDLY":
-            print("\nYou fled in terror, leaving your pride behind.")
-            self.player.apply_decision_effect({"insight": -3})
+            lines.append("You fled in terror, leaving your pride behind.")
+            self.player.apply_decision_effect({"insight": -3}, silent=True)
             self.player.hp = 20
-            
         else:
-            print(f"\nEncounter ended with status: {result}")
+            lines.append(f"Encounter ended with status: {result}")
             self.player.hp = 15
+            
+        box_text(lines, width=60, title="AFTERMATH", color="MAGENTA")
 
     def _get_philosophical_ending(self, dominant, scars):
         """Returns a philosophical message based on playstyle."""
