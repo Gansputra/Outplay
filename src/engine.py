@@ -1,4 +1,4 @@
-from .utils import clear_screen, safe_input, print_header
+from .utils import clear_screen, safe_input, print_header, CLR, print_logo, box_text, print_subheader
 from .player import Player
 from .enemy import Enemy
 from .combat import CombatManager
@@ -26,7 +26,6 @@ class GameEngine:
 
     def _handle_menu(self):
         clear_screen()
-        from .utils import print_logo, box_text
         print_logo()
         
         menu_options = [
@@ -128,7 +127,6 @@ class GameEngine:
 
     def _handle_rest_stop(self):
         clear_screen()
-        from .utils import box_text
         print_header("TOWER SANCTUARY", color="GREEN")
         
         options = [
@@ -150,7 +148,6 @@ class GameEngine:
 
     def _process_combat_result(self, result):
         clear_screen()
-        from .utils import box_text
         print_header("CHRONICLE UPDATE", color="YELLOW")
         
         lines = []
@@ -175,7 +172,6 @@ class GameEngine:
 
     def _get_philosophical_ending(self, dominant, scars):
         """Returns a philosophical message based on playstyle."""
-        from .utils import CLR
         
         if dominant in ["ATTACK", "PRESSURE"]:
             title = f"{CLR['RED']}The Path of the Conqueror{CLR['RESET']}"
@@ -196,7 +192,6 @@ class GameEngine:
         return title, msg
 
     def _shutdown(self):
-        from .utils import print_subheader, CLR
         clear_screen()
         print_header("FINAL CHRONICLE", color="MAGENTA")
         

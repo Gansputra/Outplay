@@ -54,5 +54,13 @@
         "final_hp": "100/100",
         "scars": [],
         "ending_type": "MANUAL_EXIT"
+    },
+    {
+        "player_name": "22",
+        "fights": 0,
+        "dominant_decision": "None",
+        "final_hp": "100/100",
+        "scars": [],
+        "ending_type": "MANUAL_EXIT"
     }
 ]
