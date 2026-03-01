@@ -170,4 +170,3 @@ class CombatManager:
                 self.player.apply_decision_effect({"focus": 1}, silent=True)
 
         return turn_log
-```

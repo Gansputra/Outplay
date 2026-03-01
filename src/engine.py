@@ -38,6 +38,9 @@ class GameEngine:
         choice = safe_input("\nChoose an option: ")
         
         if choice == "1":
+            name = safe_input("\nEnter your name, Traveler: ")
+            if name:
+                self.player.name = name
             self.state = "PLAYING"
         elif choice == "2":
             clear_screen()
