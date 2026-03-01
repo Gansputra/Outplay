@@ -61,3 +61,12 @@ class Player:
             else:
                 if not silent:
                     print(f"[Warning] Unknown stat: {stat}")
+
+    def recover(self, hp_amount=0, focus_amount=0):
+        """Restores HP and Focus, capped at max values."""
+        if hp_amount > 0:
+            self.hp = min(self.max_hp, self.hp + hp_amount)
+            print(f"[Rest] Recovered {hp_amount} HP.")
+        if focus_amount > 0:
+            self.focus = min(self.max_focus, self.focus + focus_amount)
+            print(f"[Rest] Recovered {focus_amount} Focus.")

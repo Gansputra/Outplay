@@ -70,33 +70,83 @@ class GameEngine:
             input("Press Enter to try again.")
 
     def _handle_gameplay(self):
-        clear_screen()
-        print_header("A SHADOW APPROACHES", color="RED")
-        from .utils import CLR
-        print(f"\n{CLR['BOLD']}A figure emerges from the gloom...{CLR['RESET']}")
+        floor = 1
+        tower_active = True
         
-        # Adjust Enemy base on difficulty
-        if self.difficulty == "EASY":
-            enemy = Enemy("Stalker", aggression=4, patience=3, adapt_rate=2)
-            enemy.hp = 40
-        elif self.difficulty == "HARD":
-            enemy = Enemy("Elite Stalker", aggression=9, patience=6, adapt_rate=8)
-            enemy.hp = 80
-        else: # MEDIUM
-            enemy = Enemy("Stalker", aggression=7, patience=3, adapt_rate=4)
-            enemy.hp = 50
+        while tower_active and self.player.hp > 0:
+            clear_screen()
+            print_header(f"FLOOR {floor}: THE ASCENSION", color="MAGENTA")
             
-        combat = CombatManager(self.player, enemy, self.player_history)
-        
-        result = combat.start_encounter()
-        self.fight_count += 1
-        
-        if result == "EXIT":
-            self.state = "EXIT"
-        else:
+            # 1. Scaling Difficulty
+            difficulty_mult = 1.0 + (floor - 1) * 0.15 # 15% stronger per floor
+            
+            # 2. Dynamic Enemy Spawning
+            enemy_name = "Shadow Stalker" if floor % 5 != 0 else "TOWER GUARDIAN"
+            aggro = min(10, 4 + floor) if self.difficulty == "HARD" else min(10, 2 + floor // 2)
+            
+            enemy = Enemy(
+                enemy_name, 
+                aggression=aggro, 
+                patience=min(10, 2 + floor // 3), 
+                adapt_rate=min(10, 2 + floor) if self.difficulty != "EASY" else 2
+            )
+            enemy.max_hp = int(enemy.max_hp * difficulty_mult)
+            enemy.hp = enemy.max_hp
+            
+            if floor % 5 == 0:
+                print(f"\n{CLR['RED']}{CLR['BOLD']}!!! WARNING: BOSS FLOOR !!!{CLR['RESET']}")
+                print(f"You feel an overwhelming presence at floor {floor}...")
+            else:
+                print(f"\n{CLR['CYAN']}Floor {floor}: A new challenger awaits...{CLR['RESET']}")
+            
+            input("\nPress Enter to engage...")
+            
+            # 3. Combat
+            combat = CombatManager(self.player, enemy, self.player_history)
+            result = combat.start_encounter()
+            
+            if result == "EXIT":
+                self.state = "EXIT"
+                return
+            
             self._process_combat_result(result)
-            input("\nPress Enter to return to menu...")
-            self.state = "MENU"
+            
+            if self.player.hp <= 0:
+                tower_active = False
+                print_header("TOWER OVERRUN", color="RED")
+                print(f"\nYou fell at Floor {floor}. Your legend ends here.")
+                input("\nPress Enter to witness your chronicle...")
+                self.state = "EXIT"
+                return
+
+            self.fight_count = floor # Track progress
+            floor += 1
+            
+            # 4. Rest Stops (Every 2 floors)
+            if tower_active and floor % 2 == 0:
+                self._handle_rest_stop()
+
+    def _handle_rest_stop(self):
+        clear_screen()
+        from .utils import box_text
+        print_header("TOWER SANCTUARY", color="GREEN")
+        
+        options = [
+            "1. Meditate (-Focus Exhaustion)",
+            "2. Bandage  (+20 HP)",
+            "3. Continue (Higher Resolve)"
+        ]
+        box_text(options, width=45, title="REST STOP", color="GREEN")
+        
+        choice = safe_input("\nChoose your respite: ")
+        if choice == "1":
+            self.player.recover(focus_amount=5)
+        elif choice == "2":
+            self.player.recover(hp_amount=20)
+        else:
+            print("\nYou push forward without rest. Risk is the price of glory.")
+            
+        input("\nPress Enter to climb higher...")
 
     def _process_combat_result(self, result):
         clear_screen()
@@ -106,24 +156,22 @@ class GameEngine:
         lines = []
         if result == "VICTORY":
             lines.append("You emerged victorious. Your resolve strengthens.")
-            self.player.apply_decision_effect({"focus": 2, "insight": 1}, silent=True)
+            # Rewards scale slightly
+            self.player.apply_decision_effect({"focus": 1, "insight": 2}, silent=True)
         elif result == "PHYSICAL_TRAUMA":
             lines.append("You were beaten down brutally.")
             self.player.apply_permanent_penalty("max_hp", 5, "Shattered Ribs")
-            self.player.hp = 10
         elif result == "MENTAL_COLLAPSE":
             lines.append("Your mind gave way before your body did.")
             self.player.apply_permanent_penalty("max_focus", 2, "Nightmares")
-            self.player.focus = 2
         elif result == "ESCAPED_COWARDLY":
-            lines.append("You fled in terror, leaving your pride behind.")
+            lines.append("You fled in terror. You lost ground.")
             self.player.apply_decision_effect({"insight": -3}, silent=True)
-            self.player.hp = 20
         else:
             lines.append(f"Encounter ended with status: {result}")
-            self.player.hp = 15
             
         box_text(lines, width=60, title="AFTERMATH", color="MAGENTA")
+        input("\nPress Enter to continue...")
 
     def _get_philosophical_ending(self, dominant, scars):
         """Returns a philosophical message based on playstyle."""
