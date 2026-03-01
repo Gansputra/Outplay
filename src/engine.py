@@ -12,7 +12,6 @@ class GameEngine:
         self.player_history = []
         self.fight_count = 0
         self.state = "MENU" # MENU, PLAYING, EXIT
-        self.difficulty = "MEDIUM"
 
     def start(self):
         """Starts the main game loop."""
@@ -41,20 +40,6 @@ class GameEngine:
             name = safe_input("\nEnter your name, Traveler: ")
             if name:
                 self.player.name = name
-            
-            # Difficulty Selection
-            clear_screen()
-            diff_options = [
-                "1. EASY   (Classic Journey)",
-                "2. MEDIUM (The Standard)",
-                "3. HARD   (Cruel Reality)"
-            ]
-            box_text(diff_options, width=40, title="SELECT DIFFICULTY", color="YELLOW")
-            diff_choice = safe_input("\nHow difficult is your path? ")
-            
-            if diff_choice == "1": self.difficulty = "EASY"
-            elif diff_choice == "3": self.difficulty = "HARD"
-            else: self.difficulty = "MEDIUM"
                 
             self.state = "PLAYING"
         elif choice == "2":
@@ -81,13 +66,14 @@ class GameEngine:
             
             # 2. Dynamic Enemy Spawning
             enemy_name = "Shadow Stalker" if floor % 5 != 0 else "TOWER GUARDIAN"
-            aggro = min(10, 4 + floor) if self.difficulty == "HARD" else min(10, 2 + floor // 2)
+            aggro = min(10, 3 + floor // 2)
+            adaptation = min(10, 2 + floor // 4)
             
             enemy = Enemy(
                 enemy_name, 
                 aggression=aggro, 
                 patience=min(10, 2 + floor // 3), 
-                adapt_rate=min(10, 2 + floor) if self.difficulty != "EASY" else 2
+                adapt_rate=adaptation
             )
             enemy.max_hp = int(enemy.max_hp * difficulty_mult)
             enemy.hp = enemy.max_hp
