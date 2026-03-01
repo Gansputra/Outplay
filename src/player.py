@@ -10,6 +10,7 @@ class Player:
         self.max_focus = focus
         self.risk = risk
         self.permanent_scars = []
+        self.perks = []
 
     def display_status(self):
         """Displays the player's current status and statistics."""

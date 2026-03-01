@@ -126,11 +126,23 @@ class CombatManager:
         # RESOLUTION LOGIC
         if player_action == "OBSERVE":
             insight_gain = int(2 * modifier)
+            if "Keen Insight" in self.player.perks:
+                insight_gain += 1
+            
             self.player.apply_decision_effect({"insight": insight_gain, "risk": -5}, silent=True)
             
+            if "Steady Breath" in self.player.perks:
+                self.player.apply_decision_effect({"focus": 1}, silent=True)
+                turn_log.append(f"{CLR['BLUE']}Perk: Steady Breath (+1 Focus){CLR['RESET']}")
+
             if enemy_action == "ATTACK":
                 risk_multiplier = 1.0 + (self.player.risk / 100.0)
                 dmg = int(5 * risk_multiplier)
+                
+                if "Iron Resolve" in self.player.perks:
+                    dmg = max(1, dmg - 2)
+                    turn_log.append(f"{CLR['CYAN']}Perk: Iron Resolve (-2 Dmg){CLR['RESET']}")
+
                 self.player.apply_decision_effect({"hp": -dmg, "insight": 1}, silent=True)
                 turn_log.append(f"{CLR['RED']}Result: Caught off-guard! Take {dmg} dmg.{CLR['RESET']}")
             else:
@@ -156,14 +168,24 @@ class CombatManager:
                 turn_log.append(f"Result: They didn't bite. Risk increased.")
 
         elif player_action == "ATTACK":
-            if self.player.focus >= 2:
+            if self.player.focus >= 2 or ("Focused Mind" in self.player.perks and self.player.focus >= 1):
                 base_dmg = int((8 + (self.player.insight // 3)) * modifier)
+                
+                if "Adrenaline" in self.player.perks and self.player.risk > 40:
+                    base_dmg += 4
+                    turn_log.append(f"{CLR['RED']}Perk: Adrenaline (+4 Damage!){CLR['RESET']}")
+
                 if enemy_action == "DEFEND":
                     base_dmg //= 2
                     turn_log.append(f"Result: Attack partially blocked.")
                 
                 self.enemy.hp -= base_dmg
-                self.player.apply_decision_effect({"focus": -2, "risk": 5}, silent=True)
+                
+                focus_cost = -2
+                if "Focused Mind" in self.player.perks:
+                    focus_cost = -1
+                
+                self.player.apply_decision_effect({"focus": focus_cost, "risk": 5}, silent=True)
                 turn_log.append(f"Result: Struck for {base_dmg} dmg.")
             else:
                 turn_log.append(f"{CLR['YELLOW']}Result: Too exhausted to attack.{CLR['RESET']}")

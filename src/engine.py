@@ -119,11 +119,60 @@ class GameEngine:
                 return
 
             self.fight_count = floor # Track progress
+            
+            # 4. Perk Selection (EVERY FLOOR)
+            self._handle_perk_selection(floor)
+            
             floor += 1
             
-            # 4. Rest Stops (Every 2 floors)
+            # 5. Rest Stops (Every 2 floors)
             if tower_active and floor % 2 == 0:
                 self._handle_rest_stop()
+
+    def _handle_perk_selection(self, floor):
+        import random
+        clear_screen()
+        print_header(f"SOUL FRAGMENT: FLOOR {floor}", color="CYAN")
+        
+        all_perks = {
+            "Focused Mind": "Attack Focus cost reduced by 1",
+            "Iron Resolve": "Reduce all damage taken by 2",
+            "Keen Insight": "Gain +1 extra Insight when Observing",
+            "Adrenaline": "Deal +4 damage if Risk is above 40%",
+            "Steady Breath": "Recover +1 Focus during local Observation"
+        }
+        
+        # Pick 3 random perks the player doesn't have yet (if possible)
+        available = [p for p in all_perks.keys() if p not in self.player.perks]
+        if not available:
+            print("\nYou have mastered all fragments. Your soul is complete.")
+            input("\nPress Enter to continue...")
+            return
+
+        choices = random.sample(available, min(3, len(available)))
+        
+        lines = []
+        for i, p in enumerate(choices, 1):
+            lines.append(f"{i}. {p}: {all_perks[p]}")
+        
+        box_text(lines, width=55, title="CHOOSE A PERK", color="CYAN")
+        
+        choice = safe_input("\nSelect a fragment to absorb: ")
+        
+        idx = -1
+        try:
+            if choice in ["1", "2", "3"]:
+                idx = int(choice) - 1
+            if 0 <= idx < len(choices):
+                chosen_perk = choices[idx]
+                self.player.perks.append(chosen_perk)
+                print(f"\n{CLR['GREEN']}[!] Inherited Perk: {chosen_perk}{CLR['RESET']}")
+            else:
+                print("\nYou failed to grasp the soul. The fragment shatters...")
+        except:
+            print("\nThe fragment vanishes into the void.")
+            
+        input("\nPress Enter to continue ascension...")
 
     def _handle_rest_stop(self):
         clear_screen()
